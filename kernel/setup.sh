@@ -39,11 +39,11 @@ perform_cleanup() {
 # Sets up or update KernelSU-Next environment
 setup_kernelsu() {
     echo "[+] Setting up KernelSU-Next..."
-    test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/KernelSU-Next/KernelSU-Next && echo "[+] Repository cloned."
+    test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/Sa-Sajjad/KernelSU-Next && echo "[+] Repository cloned."
     cd "$GKI_ROOT/KernelSU-Next"
     git stash && echo "[-] Stashed current changes."
     if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
-        git checkout next && echo "[-] Switched to next branch."
+        git checkout next-susfs-dev && echo "[-] Switched to next-susfs-dev branch."
     fi
     git pull && echo "[+] Repository updated."
     if [ -z "${1-}" ]; then
@@ -57,6 +57,13 @@ setup_kernelsu() {
     # Add entries in Makefile and Kconfig if not already existing
     grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-\$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE" && echo "[+] Modified Makefile."
     grep -q "source \"drivers/kernelsu/Kconfig\"" "$DRIVER_KCONFIG" || sed -i "/endmenu/i\source \"drivers/kernelsu/Kconfig\"" "$DRIVER_KCONFIG" && echo "[+] Modified Kconfig."
+
+    echo "[+] Settings up KernelSU-Next as drivers."
+    cd "$GKI_ROOT"
+    rm -rf drivers/kernelsu
+    mkdir -p drivers/kernelsu
+    mv KernelSU-Next/kernel/* drivers/kernelsu/
+    rm -rf KernelSU-Next
     echo '[+] Done.'
 }
 
